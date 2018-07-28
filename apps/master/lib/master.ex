@@ -1,0 +1,2 @@
+defmodule Master do
+end
