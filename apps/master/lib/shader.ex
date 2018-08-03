@@ -6,8 +6,6 @@ defmodule Shader do
     |> String.split()
     |> IO.inspect()
     |> parse_shader
-
-    # |> Enum.reduce_while(%{:state => :begin}, &do_parse/2)
   end
 
   defp parse_shader(tokens) do
@@ -27,16 +25,19 @@ defmodule Shader do
               {:shader, shader},
               put_in(ctx, [shader], %{:params => %{}, :stages => []})
             )
+
           [] ->
-          {:ok, ctx}
+            {:ok, ctx}
         end
 
       {:shader, shader} ->
         case tokens do
           ["{" | rest] ->
             do_parse(rest, {:stage, shader, %{}}, ctx)
+
           ["}" | rest] ->
             do_parse(rest, :begin, ctx)
+
           [_ | rest] ->
             do_parse(rest, {:shader, shader}, ctx)
         end
@@ -45,12 +46,16 @@ defmodule Shader do
         case tokens do
           ["map" = key, path | rest] ->
             do_parse(rest, {:stage, shader, Map.put(stage, key, path)}, ctx)
+
           ["clampmap" = key, path | rest] ->
             do_parse(rest, {:stage, shader, Map.put(stage, key, path)}, ctx)
+
           ["animmap" = key, _ | rest] ->
-            paths = Enum.take_while(rest, fn v ->
-              Regex.match?(~r/.+\.(tga|jpg)/, v)
-            end)
+            paths =
+              Enum.take_while(rest, fn v ->
+                Regex.match?(~r/.+\.(tga|jpg)/, v)
+              end)
+
             rest = Enum.drop(rest, Enum.count(paths))
             do_parse(rest, {:stage, shader, Map.put(stage, key, paths)}, ctx)
 
@@ -69,6 +74,4 @@ defmodule Shader do
         {:ok, ctx}
     end
   end
-
-
 end
